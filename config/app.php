@@ -186,6 +186,8 @@ return [
          * Package Service Providers...
          */
 
+        \App\Providers\SuperServiceProvider::class,
+
         /*
          * Application Service Providers...
          */

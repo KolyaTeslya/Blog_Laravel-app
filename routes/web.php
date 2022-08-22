@@ -26,7 +26,7 @@ require __DIR__.'/auth.php';
 
 Route::resource('post', \App\Http\Controllers\PostController::class);
 
-
+Route::get('test-provider', [\App\Http\Controllers\TestController::class, 'testProvider']);
 
 
 

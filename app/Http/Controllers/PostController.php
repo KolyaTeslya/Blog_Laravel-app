@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreatePostRequest;
+use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
@@ -13,7 +16,9 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
+        $posts = Post::all();
+
+        return view('index',compact('posts'));
     }
 
     /**
@@ -23,18 +28,29 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return view('create');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\CreatePostRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreatePostRequest $request)
     {
-        //
+        $post = Post::create([
+            'title' => $request->get('title'),
+            'body' => $request->get('body'),
+            'userId' => Auth::user()->id
+        ]);
+
+        if (!$post){
+            return redirect()->back();
+        }
+
+        $request->session()->flash('flash_message', 'Post saved');
+        return  redirect()->route('post.index');
     }
 
     /**
@@ -45,7 +61,11 @@ class PostController extends Controller
      */
     public function show($id)
     {
-        //
+        $post = Post::findOrFail($id);
+
+        return view('show',[
+            'post' => $post
+        ]);
     }
 
     /**
@@ -56,7 +76,11 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        //
+        $post = Post::findOrFail($id);
+
+        return view('edit',[
+            'post' => $post
+        ]);
     }
 
     /**
@@ -68,7 +92,16 @@ class PostController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $post = Post::findOrFail($id);
+
+        $post->fill($request->all());
+
+        if (!$post->save()) {
+            return redirect()->back()->withErrors('Update error');
+        }
+
+        $request->session()->flash('flash_message', 'Post updated');
+        return redirect()->route('post.index');
     }
 
     /**
@@ -79,6 +112,13 @@ class PostController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $post = Post::findOrFail($id);
+
+        if (!$post->delete()){
+            return redirect()->back()->withErrors('Delete error');
+        }
+
+        session()->flash('flash_message', 'Post deleted');
+        return redirect()->back();
     }
 }
